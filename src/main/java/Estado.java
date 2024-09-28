@@ -4,7 +4,9 @@ public class Estado {
 
     // Atributos que estão no xml do automato
     private String nome;
-    private int id, x, y;
+    private int id;
+    private double x, y;
+    private boolean fim, inicial;
 
     /**
      *  Cada estado pode varias transições saindo e entrando nele.
@@ -14,11 +16,18 @@ public class Estado {
     ArrayList<Transicao> lstTransicoes = new ArrayList<>();
 
     // Construtor passando todos os atributos presentes no xml
-    public Estado(String nome, int id, int x, int y){
+
+    public Estado(String nome, int id, double x, double y, boolean fim, boolean inicial) {
         this.nome = nome;
         this.id = id;
         this.x = x;
         this.y = y;
+        this.fim = fim;
+        this.inicial = inicial;
+    }
+
+    public Estado(Estado estado) {
+
     }
 
     // Métodos getters e setters
@@ -38,19 +47,19 @@ public class Estado {
         this.id = id;
     }
 
-    public int getX() {
+    public double getX() {
         return x;
     }
 
-    public void setX(int x) {
+    public void setX(double x) {
         this.x = x;
     }
 
-    public int getY() {
+    public double getY() {
         return y;
     }
 
-    public void setY(int y) {
+    public void setY(double y) {
         this.y = y;
     }
 }

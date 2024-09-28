@@ -141,6 +141,22 @@ public class InterfaceGrafica {
         botao.setForeground(new Color(255, 255, 255));
         botao.setBackground(new Color(0x484142));
         frame.add(botao);
+
+        botao.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser arquivoEscolhido = new JFileChooser();
+                int enviou = arquivoEscolhido.showOpenDialog(frame);
+                if (enviou == JFileChooser.APPROVE_OPTION) {
+                    File file = arquivoEscolhido.getSelectedFile();
+                    // Aqui você pode adicionar o código para processar o arquivo selecionado
+                    System.out.println("Arquivo selecionado1: " + file.getAbsolutePath());
+                     LeitorXML leitorXML = new LeitorXML();
+
+                     leitorXML.lerArquivo(file.getAbsolutePath());
+                }
+            }
+        });
     }
 
     public void botaoAfdMinimizado(){
