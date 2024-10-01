@@ -12,8 +12,15 @@ public class LeitorXML {
      */
 
     ArrayList<Estado> lstEstados = new ArrayList<>();
-    ArrayList<Transicao> lstTrasicoes = new ArrayList<>();
+    ArrayList<Transicao> lstTransicoes = new ArrayList<>();
 
+    /**
+     * Este método serve para chamar outros métodos necessarios para ler
+     * o arquixo XML, assim como as verificações minimas para prosseguir
+     * com a leitura.
+     *
+     * @param endereco passa o endereço do arquivo que deseja fazer a operação.
+     */
     public void lerArquivo(String endereco) {
         // Verificações iniciais
         if (!verificarTipoXML(endereco) || !verificarSeXML(endereco) || !verificarXMLAutomato(endereco)) {
@@ -21,58 +28,76 @@ public class LeitorXML {
         }
 
         try {
-            // Inicializa o parser
+            // Inicializa o parser.
             Document doc = inicializarParser(endereco);
 
-            // Normaliza a estrutura do XML
+            // Normaliza a estrutura do XML.
             normalizarDocumento(doc);
 
-            // Lê e processa os estados
+            // Lê e processa os estados.
             lerEstados(doc);
 
-            // Lê e processa as transições
+            // Lê e processa as transições.
             lerTransicoes(doc);
 
+            // Se chegou até aqui é por que deu tudo certo na leitura do XML.
+            Conversor conversor = new Conversor(lstEstados, lstTransicoes);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // Método para inicializar o parser do XML
-    private Document inicializarParser(String endereco) throws Exception {
+    // Método para inicializar o parser do XML.
+    public Document inicializarParser(String endereco) throws Exception {
         File arquivoXML = new File(endereco);
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         return dBuilder.parse(arquivoXML);
     }
 
-    // Método para normalizar o documento XML
-    private void normalizarDocumento(Document doc) {
+    // Método para normalizar o documento XML.
+    public void normalizarDocumento(Document doc) {
         doc.getDocumentElement().normalize();
         System.out.println("Elemento raiz: " + doc.getDocumentElement().getNodeName());
     }
 
-    // Método para ler e processar os estados
-    private void lerEstados(Document doc) {
+    // Método para ler e armazenar todos os estados e colocar no ArrayList.
+    public void lerEstados(Document doc) {
+        // Para pegar todos os elementos que tem a tag "state".
         NodeList listaDeEstados = doc.getElementsByTagName("state");
 
+        // Vai se repetir até que todas as tags "state" tenham sido processadas.
         for (int i = 0; i < listaDeEstados.getLength(); i++) {
+
+            // Coloca cada item "state" para dentro de no.
             Node no = listaDeEstados.item(i);
 
+            // Verifica se o nó atual é um elemento XML (<tag>),
+            // ignorando outros tipos de nós como texto ou atributos
             if (no.getNodeType() == Node.ELEMENT_NODE) {
+
+                // Faz um cast do nó atual para Element, permitindo acessar
+                // métodos específicos de elementos XML, como id ou name.
                 Element elemento = (Element) no;
+
+                // Pegando os atributos que estão no XML e colocando dentro de String.
                 String id = elemento.getAttribute("id");
                 String nome = elemento.getAttribute("name");
                 String x = elemento.getElementsByTagName("x").item(0).getTextContent();
                 String y = elemento.getElementsByTagName("y").item(0).getTextContent();
+
                 // Verifica se existe o elemento "final" dentro deste estado
                 boolean fim = elemento.getElementsByTagName("final").getLength() > 0;
+                // Verifica se existe o elemento "inicial" dentro deste estado
                 boolean inicial = elemento.getElementsByTagName("initial").getLength() > 0;
 
 
                 System.out.print("Fim? " + fim + " Inicio? " + inicial + " ");
+
+                // Pegando as variaveis que estavam no "state" dessa repetição e criando um objeto Estado
                 Estado estado = new Estado(nome, Integer.parseInt(id), Double.parseDouble(x),
                         Double.parseDouble(y), fim,inicial);
+
                 lstEstados.add(estado);
 
                 System.out.println("State id: " + id + ", name: " + nome + ", x: " + x + ", y: " + y);
@@ -80,8 +105,13 @@ public class LeitorXML {
         }
     }
 
-    // Método para ler e processar as transições
-    private void lerTransicoes(Document doc) {
+    /**
+     * Método para ler e armazenar no ArrayList todas as transições.
+     * OBS: A explicação desse método é praticamente igual ao de ler os
+     * estados, o que muda é só que estamos pegando todos os elementos
+     * presentes nas tags "transition".
+     */
+    public void lerTransicoes(Document doc) {
         NodeList listaDeTransicoes = doc.getElementsByTagName("transition");
 
         for (int i = 0; i < listaDeTransicoes.getLength(); i++) {
@@ -97,7 +127,8 @@ public class LeitorXML {
                 Estado paraEstado = procurarEstado(Integer.parseInt(para));
 
                 Transicao transicao = new Transicao(deEstado, paraEstado, simbolo);
-                lstTrasicoes.add(transicao);
+                
+                lstTransicoes.add(transicao);
 
                 System.out.println("Transition from: " + de + " to: " + para + " reading: " + simbolo);
             }
@@ -193,6 +224,17 @@ public class LeitorXML {
         }
     }
 
+
+    /**
+     * Este método serve para achar no ArrayList de estados o estado
+     * que foi lido na tag "transition", a partir do Id, pois na
+     * classe Transicao, o atributo "de" e "para" são do tipo Estado.
+     *
+     * @param Id É o identificador do Estado (cada estado tem o seu,
+     * sem repetição).
+     *
+     * @return Retorna o estado ao qual pertence o Id.
+     */
     public Estado procurarEstado(int Id) {
 
         for (Estado e : lstEstados) {

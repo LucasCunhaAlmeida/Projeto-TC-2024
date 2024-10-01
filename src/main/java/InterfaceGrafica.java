@@ -66,33 +66,25 @@ public class InterfaceGrafica {
         botao.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                /*
+                // Emitindo um aviso na tela
                 JOptionPane.showMessageDialog(null,
-                        "Para realizar essa operação, você precisa de dois arquivos JFF. " +
-                                "Selecione o primeiro arquivo!",
+                        "PARA REALIZAR ESSA OPERAÇÃO, VOCÊ PRECISA DE DOIS ARQUIVOS .JFF \n",
                         "Aviso",
                         JOptionPane.INFORMATION_MESSAGE);
-                // Abre o JFileChooser para selecionar um arquivo
-                JFileChooser arquivoEscolhido = new JFileChooser();
-                int enviou = arquivoEscolhido.showOpenDialog(frame);
-                if (enviou == JFileChooser.APPROVE_OPTION) {
-                    File file = arquivoEscolhido.getSelectedFile();
-                    // Aqui você pode adicionar o código para processar o arquivo selecionado
-                    System.out.println("Arquivo selecionado1: " + file.getAbsolutePath());
-                }
+                // Pedindo para escolher o primeiro arquivo a ser lido.
+                File file = pedirEnderecoArquivo();
+                LeitorXML leitorXML = new LeitorXML();
+                leitorXML.lerArquivo(file.getAbsolutePath());
 
                 JOptionPane.showMessageDialog(null,
-                                "Selecione o segundo arquivo!",
+                        "SELECIONE O SEGUNDO ARQUIVO!",
                         "Aviso",
                         JOptionPane.INFORMATION_MESSAGE);
-                // Abre o JFileChooser para selecionar um arquivo
-                arquivoEscolhido = new JFileChooser();
-                enviou = arquivoEscolhido.showOpenDialog(frame);
-                if (enviou == JFileChooser.APPROVE_OPTION) {
-                    File file = arquivoEscolhido.getSelectedFile();
-                    // Aqui você pode adicionar o código para processar o arquivo selecionado
-                    System.out.println("Arquivo selecionado2: " + file.getAbsolutePath());
-                }
+
+                file = pedirEnderecoArquivo();
+                leitorXML.lerArquivo(file.getAbsolutePath());
+                */
             }
         });
     }
@@ -145,16 +137,10 @@ public class InterfaceGrafica {
         botao.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JFileChooser arquivoEscolhido = new JFileChooser();
-                int enviou = arquivoEscolhido.showOpenDialog(frame);
-                if (enviou == JFileChooser.APPROVE_OPTION) {
-                    File file = arquivoEscolhido.getSelectedFile();
-                    // Aqui você pode adicionar o código para processar o arquivo selecionado
-                    System.out.println("Arquivo selecionado1: " + file.getAbsolutePath());
-                     LeitorXML leitorXML = new LeitorXML();
-
-                     leitorXML.lerArquivo(file.getAbsolutePath());
-                }
+                // Pedindo para escolher o arquivo a ser lido.
+                File file = pedirEnderecoArquivo();
+                LeitorXML leitorXML = new LeitorXML();
+                leitorXML.lerArquivo(file.getAbsolutePath());
             }
         });
     }
@@ -182,5 +168,18 @@ public class InterfaceGrafica {
         texto.setFont(new Font("Arial", Font.BOLD, 30));
         texto.setForeground(new Color(0, 0, 0));
         frame.add(texto);
+    }
+
+    public File pedirEnderecoArquivo(){
+        JFileChooser arquivoEscolhido = new JFileChooser();
+        int enviou = arquivoEscolhido.showOpenDialog(frame);
+        if (enviou == JFileChooser.APPROVE_OPTION) {
+            File file = arquivoEscolhido.getSelectedFile();
+            // Aqui você pode adicionar o código para processar o arquivo selecionado
+            System.out.println("Arquivo selecionado1: " + file.getAbsolutePath());
+            return file;
+        }
+
+        return null;
     }
 }
