@@ -9,14 +9,13 @@ public class Estado {
     private boolean fim, inicial;
 
     /**
-     *  Cada estado pode varias transições saindo e entrando nele.
+     *  Cada estado pode varias transições saindo dele.
      *  Por isso se faz necessario um ArrayList para guardar todas
      *  essas transições.
      */
     ArrayList<Transicao> lstTransicoes = new ArrayList<>();
 
     // Construtor passando todos os atributos presentes no xml
-
     public Estado(String nome, int id, double x, double y, boolean fim, boolean inicial) {
         this.nome = nome;
         this.id = id;
@@ -62,4 +61,25 @@ public class Estado {
     public void setY(double y) {
         this.y = y;
     }
+
+    public boolean isFim() {
+        return fim;
+    }
+
+    public void setFim(boolean fim) {
+        this.fim = fim;
+    }
+
+    public boolean isInicial() {
+        return inicial;
+    }
+
+    public void setInicial(boolean inicial) {
+        this.inicial = inicial;
+    }
+
+    public ArrayList<Transicao> getLstTransicoes() {
+        return lstTransicoes;
+    }
+
 }

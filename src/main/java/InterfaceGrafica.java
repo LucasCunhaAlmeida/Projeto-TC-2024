@@ -1,8 +1,15 @@
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 public class InterfaceGrafica {
 
@@ -139,8 +146,7 @@ public class InterfaceGrafica {
             public void actionPerformed(ActionEvent e) {
                 // Pedindo para escolher o arquivo a ser lido.
                 File file = pedirEnderecoArquivo();
-                LeitorXML leitorXML = new LeitorXML();
-                leitorXML.lerArquivo(file.getAbsolutePath());
+                Controlador control = new Controlador(file);	// Executa toda conversão
             }
         });
     }

@@ -1,7 +1,14 @@
-import org.w3c.dom.*;
-import javax.xml.parsers.*;
 import java.io.File;
 import java.util.ArrayList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 
 public class LeitorXML {
 
@@ -11,8 +18,21 @@ public class LeitorXML {
      * pulação.
      */
 
-    ArrayList<Estado> lstEstados = new ArrayList<>();
-    ArrayList<Transicao> lstTransicoes = new ArrayList<>();
+    private ArrayList<Estado> lstEstados = new ArrayList<>();
+    private ArrayList<Transicao> lstTransicoes = new ArrayList<>();
+    private ArrayList<String> alfabeto = new ArrayList<String>();
+
+    // Construtor padrão
+    public LeitorXML() {
+
+    }
+
+    // Novo construtor para "Carregar" as listas da classe Principal
+    public LeitorXML(ArrayList<Estado> lstEstados, ArrayList<Transicao> lstTransicoes, ArrayList<String> alfabeto) {
+        this.lstEstados = lstEstados;
+        this.lstTransicoes = lstTransicoes;
+        this.alfabeto = alfabeto;
+    }
 
     /**
      * Este método serve para chamar outros métodos necessarios para ler
@@ -40,15 +60,32 @@ public class LeitorXML {
             // Lê e processa as transições.
             lerTransicoes(doc);
 
-            // Se chegou até aqui é por que deu tudo certo na leitura do XML.
-            Conversor conversor = new Conversor(lstEstados, lstTransicoes);
+            carregarTransicoesEstado();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        alfabeto = verificarAlfabeto();
+
+        System.out.println("\n\n ---------- Alfabeto ----------\n\n");
+        for (String a: alfabeto){
+            System.out.println(a);
+        }
+
+        System.out.println("tamanho do alfabeto: " + alfabeto.size());
+
+        if (verificaSeAfn(alfabeto)){
+            System.out.println("É um AFN");
+        }else{
+            // Não tem mais o que fazer, pois já é um AFD.
+            System.out.println("É um AFD");
+        }
+
     }
 
     // Método para inicializar o parser do XML.
-    public Document inicializarParser(String endereco) throws Exception {
+    private Document inicializarParser(String endereco) throws Exception {
         File arquivoXML = new File(endereco);
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -56,13 +93,13 @@ public class LeitorXML {
     }
 
     // Método para normalizar o documento XML.
-    public void normalizarDocumento(Document doc) {
+    private void normalizarDocumento(Document doc) {
         doc.getDocumentElement().normalize();
         System.out.println("Elemento raiz: " + doc.getDocumentElement().getNodeName());
     }
 
     // Método para ler e armazenar todos os estados e colocar no ArrayList.
-    public void lerEstados(Document doc) {
+    private void lerEstados(Document doc) {
         // Para pegar todos os elementos que tem a tag "state".
         NodeList listaDeEstados = doc.getElementsByTagName("state");
 
@@ -106,12 +143,29 @@ public class LeitorXML {
     }
 
     /**
+     * Este método serve para pegar todas as transições que um determinado estado
+     * alcança, colocando essas transições dentro do ArrayList da classe Estado.
+     * OBS: Cada estado pode ter uma serie de transições saindo dele.
+     */
+    private void carregarTransicoesEstado() {
+
+        for(Estado e : lstEstados) {
+            for(Transicao t : lstTransicoes) {
+                if(t.getDe().getId() == e.getId()) {
+                    e.getLstTransicoes().add(t);
+                }
+            }
+        }
+
+    }
+
+    /**
      * Método para ler e armazenar no ArrayList todas as transições.
      * OBS: A explicação desse método é praticamente igual ao de ler os
      * estados, o que muda é só que estamos pegando todos os elementos
      * presentes nas tags "transition".
      */
-    public void lerTransicoes(Document doc) {
+    private void lerTransicoes(Document doc) {
         NodeList listaDeTransicoes = doc.getElementsByTagName("transition");
 
         for (int i = 0; i < listaDeTransicoes.getLength(); i++) {
@@ -127,7 +181,7 @@ public class LeitorXML {
                 Estado paraEstado = procurarEstado(Integer.parseInt(para));
 
                 Transicao transicao = new Transicao(deEstado, paraEstado, simbolo);
-                
+
                 lstTransicoes.add(transicao);
 
                 System.out.println("Transition from: " + de + " to: " + para + " reading: " + simbolo);
@@ -142,7 +196,7 @@ public class LeitorXML {
      * @param endereco Esse parametro passa onde o arquivo está na máquina.
      * @return Se o arquivo tiver a extensão .xml ou .jff, retorna true; senão, retorna false.
      */
-    public boolean verificarTipoXML(String endereco) {
+    private boolean verificarTipoXML(String endereco) {
         return endereco.toLowerCase().endsWith(".xml") || endereco.toLowerCase().endsWith(".jff");
     }
 
@@ -153,7 +207,7 @@ public class LeitorXML {
      * @param endereco Esse parametro passa onde o arquivo está na máquina.
      * @return se o xml for bem formado, retorna true; senão, retorna false.
      */
-    public boolean verificarSeXML(String endereco) {
+    private boolean verificarSeXML(String endereco) {
         try {
             // Cria um arquivo do tipo File
             File arquivo = new File(endereco);
@@ -168,9 +222,9 @@ public class LeitorXML {
              * exceção (como SAXException).
              */
             dbFactory.newDocumentBuilder().parse(arquivo);
-            return true; // Se não houve exceções, o arquivo é um XML válido
+            return true; // Se não houve exceções, o arquivo é um XML válido.
         } catch (Exception e) {
-            // Se alguma exceção foi lançada, o arquivo não é um XML válido
+            // Se alguma exceção foi lançada, o arquivo não é um XML válido.
             return false;
         }
     }
@@ -184,7 +238,7 @@ public class LeitorXML {
      * @return se o xml tiver todas as tags de um automato, retorna true;
      * ,senão, retorna false.
      */
-    public static boolean verificarXMLAutomato(String endereco) {
+    private boolean verificarXMLAutomato(String endereco) {
         try {
             // Carrega o arquivo XML
             File xmlFile = new File(endereco);
@@ -235,7 +289,7 @@ public class LeitorXML {
      *
      * @return Retorna o estado ao qual pertence o Id.
      */
-    public Estado procurarEstado(int Id) {
+    private Estado procurarEstado(int Id) {
 
         for (Estado e : lstEstados) {
             if (e.getId() == Id) {
@@ -243,6 +297,82 @@ public class LeitorXML {
             }
         }
         return null;
+    }
+
+    /**
+     * Este método verifica qual o alfabeto do automato, percorrendo o
+     * ArrayList de transições, eliminando as duplicatas para sabermos
+     * exatamente qual é o alfabeto usado.
+     *
+     * @return Retorna um ArrayList de String que contém para cada posição um
+     * simbolo que está presente no automato que queremos fazer a operação.
+     */
+    private ArrayList<String> verificarAlfabeto(){
+        ArrayList<String> simbolos = new ArrayList<>();
+
+        // 1° percorre o ArrayList de transicões
+        for (Transicao t: lstTransicoes){
+            // 2° verifica se já existe algum símbolo igual no ArrayList de simbolos
+            if (!verificarDuplicata(simbolos,t.getSimbolo())){
+                simbolos.add(t.getSimbolo());
+            }
+        }
+        return simbolos;
+    }
+
+    /**
+     * Este metodo verifica se já existe algum símbolo no ArrayList passado que
+     * é igual ao simbolo que queremos verificar.
+     *
+     * @return Se já existe retorna verdadeiro, senão, retorna false.
+     */
+    private boolean verificarDuplicata(ArrayList<String> novaLista, String simbolo) {
+        for (String s : novaLista) {
+            if (s.equals(simbolo)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Este método verifica se existe dentro do ArrayList que guarda os simbolos,
+     * algum simbolo "", que significa o vazio.
+     *
+     * @param alfabeto Esse é o ArrayList que guarda os simbolos do alfabeto.
+     *
+     * @return Se existir alguma transição vazia("") ou mais de uma transição com o mesmo
+     * símbolo, retorna verdadeiro, pois é um AFN, senão, é um AFD e retorna falso.
+     */
+    private boolean verificaSeAfn(ArrayList<String> alfabeto){
+
+        // AFN com Lambda(palavra vazia).
+        for (String a: alfabeto){
+            if (a.equals("")){
+                // A partir daqui já sabemos que se trata de um AFN.
+                return true;
+            }
+        }
+
+        // Essa verificação serve para saber se é um AFN sem Lambda.
+        for(String s : alfabeto) {
+            for(Estado e : lstEstados) {
+                int cont = 0;
+                for(Transicao t : e.getLstTransicoes()) {
+                    if(s.equals(t.getSimbolo())) {
+                        cont++;
+                    }
+                    if(cont == 2){
+                        //Encontramos um estado onde tem duas transições com o mesmo simbolo saindo dele
+                        return true;
+                    }
+
+                }
+            }
+        }
+
+        return false;
+
     }
 
 }
