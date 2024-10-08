@@ -18,8 +18,8 @@ public class LeitorXML {
      * pulação.
      */
 
-    private ArrayList<Estado> lstEstados = new ArrayList<>();
-    private ArrayList<Transicao> lstTransicoes = new ArrayList<>();
+    private ArrayList<Estado> lstEstados = new ArrayList<Estado>();
+    private ArrayList<Transicao> lstTransicoes = new ArrayList<Transicao>();
     private ArrayList<String> alfabeto = new ArrayList<String>();
 
     // Construtor padrão
@@ -66,7 +66,8 @@ public class LeitorXML {
             e.printStackTrace();
         }
 
-        alfabeto = verificarAlfabeto();
+        alfabeto.clear();
+        alfabeto.addAll(verificarAlfabeto());
 
         System.out.println("\n\n ---------- Alfabeto ----------\n\n");
         for (String a: alfabeto){
@@ -128,16 +129,11 @@ public class LeitorXML {
                 // Verifica se existe o elemento "inicial" dentro deste estado
                 boolean inicial = elemento.getElementsByTagName("initial").getLength() > 0;
 
-
-                System.out.print("Fim? " + fim + " Inicio? " + inicial + " ");
-
                 // Pegando as variaveis que estavam no "state" dessa repetição e criando um objeto Estado
                 Estado estado = new Estado(nome, Integer.parseInt(id), Double.parseDouble(x),
                         Double.parseDouble(y), fim,inicial);
 
                 lstEstados.add(estado);
-
-                System.out.println("State id: " + id + ", name: " + nome + ", x: " + x + ", y: " + y);
             }
         }
     }
@@ -184,7 +180,6 @@ public class LeitorXML {
 
                 lstTransicoes.add(transicao);
 
-                System.out.println("Transition from: " + de + " to: " + para + " reading: " + simbolo);
             }
         }
     }

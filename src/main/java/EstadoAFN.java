@@ -6,9 +6,7 @@ public class EstadoAFN extends Estado{
 
     public EstadoAFN(Estado estado) {
         super(estado);
-        this.label = new ArrayList<Integer>();
-        // TODO Auto-generated constructor stub
-
+        this.label = new ArrayList<>();
     }
 
     public ArrayList<Integer> getLabel() {
@@ -19,4 +17,15 @@ public class EstadoAFN extends Estado{
         this.label = label;
     }
 
+    public void setLabel(int id) {
+        // Adiciona o ID ao label apenas se ele ainda não estiver presente para evitar duplicações.
+        if (!label.contains(id)) {
+            label.add(id);
+        }
+    }
+
+    // Basicamente esse método só vai checar se existe já algum id igual no ArrayList.
+    public boolean jaVisitado(int id) {
+        return label.contains(id);
+    }
 }

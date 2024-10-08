@@ -1,9 +1,17 @@
 
-
 import java.io.File;
 import java.util.ArrayList;
 
 public class Controlador {
+
+    //ArrayList's que serão lidas e carregadas pelos métodos
+    private	ArrayList<String> alfabeto = new ArrayList<String>();
+
+    private	ArrayList<Estado> lstEstadosInicial = new ArrayList<>();
+    private	ArrayList<Transicao> lstTransicoesInicial = new ArrayList<>();
+
+    private	ArrayList<EstadoAFN> lstEstadosFinal = new ArrayList<>();
+    private	ArrayList<Transicao> lstTransicoesFinal = new ArrayList<>();
 
     /**
      * Essa classe serve para gerenciar todas as funcionalidades
@@ -15,31 +23,29 @@ public class Controlador {
      */
     public Controlador(File file) {
 
-        //ArrayList's que serão lidas e carregadas pelos métodos
-        ArrayList<String> alfabeto = new ArrayList<String>();
-
-        ArrayList<Estado> lstEstadosInicial = new ArrayList<>();
-        ArrayList<Transicao> lstTransicoesInicial = new ArrayList<>();
-
-        ArrayList<EstadoAFN> lstEstadosFinal = new ArrayList<>();
-        ArrayList<Transicao> lstTransicoesFInal = new ArrayList<>();
-
         //Leitura do arquivo .xml escolhido, carregando os dados nas listas iniciais
         LeitorXML leitor = new LeitorXML(lstEstadosInicial, lstTransicoesInicial, alfabeto);
 
         // Caminho do arquivo selecionado na InterfaceGrafica
         leitor.lerArquivo(file.getAbsolutePath());
 
+        Conversor conversor = new Conversor(lstEstadosInicial, lstTransicoesInicial, alfabeto);
 
-        Conversor conversor = new Conversor(lstEstadosInicial, lstTransicoesInicial);
+        conversor.gerarAFN(lstEstadosFinal, lstTransicoesFinal);	// Falta fazer
 
-//        conversor.gerarAFN(lstEstadosFinal, lstTransicoesFinal);	// Falta fazer
-//
         //Criação do arquivo .xml, usando as listas finais geradas pela conversão do AFN
 //        leitor.gravarArquivo(lstEstadosFinal, lstTransicoesFInal, alfabeto);	// Falta fazer
 
+        //imprimirDadosConsole();
 
-        //PARTE GRÁFICA NO CONSOLE
+    }
+
+    /**
+     * Esse método serve para mostrar as informações do arquivo lido
+     * no console
+     */
+    private void imprimirDadosConsole() {
+
         System.out.println("\n\n -----Todos os Estados-----\n");
 
         for(Estado e : lstEstadosInicial) {
@@ -69,7 +75,6 @@ public class Controlador {
                 System.out.println(" ." + t.getDe().getNome() + " - " + t.getSimbolo() + " -> " + t.getPara().getNome());
             }
         }
-
     }
 
 }

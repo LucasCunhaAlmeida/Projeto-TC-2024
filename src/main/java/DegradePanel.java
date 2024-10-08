@@ -10,14 +10,9 @@ public class DegradePanel extends JPanel {
         // Obtém o objeto Graphics2D para desenhar o gradiente
         Graphics2D g2d = (Graphics2D) g;
 
-        //#004aad
-        //#cb6ce6
-
-        //#fff7ad
-        //#ffa9f9
         // Define as cores do degradê
-        Color corInicio = Color.decode("#cdffd8"); // Cor inicial
-        Color corFim = Color.decode("#94b9ff");   // Cor final
+        Color corInicio = Color.decode("#58838C"); // Cor inicial
+        Color corFim = Color.decode("#689BA6");   // Cor final
 
         // Cria um gradiente vertical
         GradientPaint gradiente = new GradientPaint(
