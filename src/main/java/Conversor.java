@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 
+
 public class Conversor {
 
     private ArrayList<Estado> lstEstadosInicial = new ArrayList<Estado>();
@@ -39,37 +40,49 @@ public class Conversor {
         novoInicial.setInicial(true);
         lstEstadosProcessados.add(novoInicial);
 
+        lstEstadosFinal.add(novoInicial);
+        pegarTransicoesDasLabels(novoInicial);
+        System.out.println("\n\nTransições desse novo Estado:\n\n");
+        testeTransicoes(novoInicial);
+        System.out.println("-----------------------------------------------------------");
         /**
          * Para cada estado que está guardado primeiramente no novo inicial,
          * temos que ver para onde ele está indo com cada simbolo do alfabeto.
          */
-        for (EstadoAFN e: lstEstadosProcessados){
-            for (String a: alfabeto){
-                estadosAlcancaveisComSimbolos(e,a);
-            }
-        }
+        // Se for a primeira vez que estamos olhando as transições, então não precisa verificar o vazio.
+        // Usando uma fila para processar estados sequencialmente
 
-        System.out.println("Alfabeto no conversor: ");
-        for (String a: alfabeto){
-            System.out.println(a);
-        }
+        boolean primeiraVez = true;
 
-        System.out.println("------------------- AFD Convertido ------------------");
-        for (EstadoAFN estadoAFN : lstEstadosProcessados) {
-            System.out.println("Labels desse novo estado\n");
+        for (int i = 0; i < lstEstadosProcessados.size(); i++){
+            EstadoAFN estadoAFN = lstEstadosProcessados.get(i);
             for (int label : estadoAFN.getLabel()) {
-                System.out.println(label);
+                for (String simbolo : alfabeto) {
+                    if (primeiraVez && simbolo.equals("")) {
+                        continue; // pula o símbolo vazio na primeira vez
+                    } 
+                    
+                    estadosAlcancaveisComSimbolos(estadoAFN, simbolo);                                   
+                }
             }
+            primeiraVez = false;
         }
+
+
+        System.out.println("\n\nEstados já convertidos\n\n");
     }
+
 
     /**
      * Este Método que serve para encontrar o estado inicial e os estados finais do autômato
      */
     private void getEstadoInicialEFinais() {
+        // Para saber se existe um inicial entre os estados.
+        boolean existeInicial = false;
         for (Estado e: lstEstadosInicial){
             if (e.isInicial()) {
                 inicial = e;
+                existeInicial = true;
             }
 
             if(e.isFim()){
@@ -77,35 +90,13 @@ public class Conversor {
             }
 
         }
+
+        if (!existeInicial){
+            inicial = lstEstadosInicial.get(0);
+            System.out.println("Não existe incial, mas esse vai ser o inicial agora: ");
+            System.out.println("ID: " + inicial.getId());
+        }
     }
-
-    //Brincadeira boa
-    /*private EstadoAFN pegarNovoInicial(Estado EstadoAnalisar){// Isso eu posso passar o inicial global
-
-        // Criando um EstadoAFN para guardar o label do novo inicial.
-        EstadoAFN estado = new EstadoAFN(inicial);
-
-        // O antigo inicial sempre vai estar no novo inicial.
-        estado.setLabel(inicial.getId());
-
-        // Aqui vamos percorrer o ArrayList de transições que está no objeto "inicial".
-        for(Transicao t: inicial.getLstTransicoes()){
-
-            if (t.getSimbolo() == "") {
-
-                estado.setLabel(t.getPara().getId());
-                pegarNovoInicial(t.getPara());
-            }
-        }
-
-        System.out.println("Novo inical: ");
-
-        for (int t: estado.getLabel()){
-            System.out.println(t);
-        }
-
-        return estado;
-    }*/
 
     private void pegarNovoInicial(EstadoAFN estadoAtual, Estado estadoAnalisar) {
 
@@ -128,38 +119,67 @@ public class Conversor {
 
     }
 
-    /**
-     *
-     *
-     * @param estadoAtual É o estado que queremos verificar as transições.
-     * @param simbolo É o simbolo da transição que queremos saber para qual
-     *               estado está indo.
-     */
+    private void pegarTransicoesDasLabels(EstadoAFN estadoAFN){
 
-    // Está errado!!!
-    private void estadosAlcancaveisComSimbolos(EstadoAFN estadoAtual, String simbolo){
-
-        for (Transicao t: estadoAtual.getLstTransicoes()){
-            System.out.println("Processando transição do estado: " + estadoAtual.getId() + " com o símbolo: " + t.getSimbolo());
-            // Verificando se essa transição atual da repetição é a mesma do símbolo dos parâmetros.
-            if (t.getSimbolo().equals(simbolo)){
-                System.out.println("Comparando símbolos: " + t.getSimbolo() + " com " + simbolo);
-
-                Estado estadoAux = t.getPara();
-
-                EstadoAFN estadoAFNAux = new EstadoAFN(estadoAux);
-                if (!verificarSeJaExisteEstado(estadoAFNAux)){
-                    System.out.println("Verificando estado com label: " + estadoAFNAux.getLabel());
-
-                    lstEstadosProcessados.add(estadoAFNAux);
-                    estadosAlcancaveisComSimbolos(estadoAFNAux, simbolo);
+        for (int label: estadoAFN.getLabel()){
+            // Peguei a lista de labels.
+            for (Estado estado: lstEstadosInicial){
+                if (estado.getId() == label){
+                    // Achamos o estado correspondente ao label.
+                    for (Transicao transicao: estado.getLstTransicoes()){
+                        // Pegamos todas essas transições deste estado e colocamos no estadoAFN.
+                        estadoAFN.getLstTransicoes().add(transicao);
+                    }
                 }
             }
-
         }
 
     }
 
+    private void estadosAlcancaveisComSimbolos(EstadoAFN estadoAtual, String simbolo) {
+        // Criando um novo EstadoAFN para armazenar os estados alcançados
+        EstadoAFN novoEstadoAFN = new EstadoAFN(new Estado("Teste", 1,300,300,false,false));
+
+        // Iterando sobre as transições do estado atual
+        for (Transicao t : estadoAtual.getLstTransicoes()) {
+
+            // Verifica se a transição corresponde ao símbolo fornecido
+            if (t.getSimbolo().equals(simbolo)) {
+                
+                if(!novoEstadoAFN.jaVisitado(t.getPara().getId())){
+                    // Obtém o ID do estado de destino
+                    int estadoDestinoId = t.getPara().getId();
+
+                    // Adiciona o ID ao novo EstadoAFN
+                    novoEstadoAFN.getLabel().add(estadoDestinoId);
+
+                }
+                
+            }
+        }
+
+        if(!verificarSeJaExisteEstado(novoEstadoAFN)){
+            // Após processar todas as transições, recupera as transições dos estados pelos IDs
+            pegarTransicoesDasLabels(novoEstadoAFN);
+
+            System.out.println("\n\nTransições desse novo Estado:\n\n");
+            testeTransicoes(novoEstadoAFN);
+            System.out.println("-----------------------------------------------------------");
+            // Adiciona o novo EstadoAFN ao ArrayList lstEstadosProcessados
+            lstEstadosProcessados.add(novoEstadoAFN);
+
+            System.out.println("Qual é esse estado? " + novoEstadoAFN.getId());
+            System.out.println("Novo EstadoAFN adicionado a lstEstadosProcessados com IDs: " + novoEstadoAFN.getLabel());
+        }
+
+    }
+
+    public void testeTransicoes(EstadoAFN estadoAFN){
+        for (Transicao transicao: estadoAFN.getLstTransicoes()){
+            System.out.println("De: " + transicao.getDe().getId() + ", Para: " + transicao.getPara().getId() + ", Lendo: "
+            + transicao.getSimbolo());
+        }
+    }
     /**
      * Este método serve para verificar se já existe algum estado igual ao que
      * precisa gerar. Para não existir duplicatas desnecessarias.
@@ -182,7 +202,8 @@ public class Conversor {
     }
 
     /**
-     * Este método serve para gerar os novos finais do AFD convertido.
+     * Este método serve para gerar os novos finais do AFD convertido a partir
+     * dos antigos finais do AFN passado para converter !!!!!!!(Aparentemente etá correto).
      */
     public void gerarNovosFinais() {
         for (EstadoAFN estadoAFN : lstEstadosProcessados) {
@@ -196,47 +217,5 @@ public class Conversor {
         }
     }
 
-    /**
-     * Esse método precisa ser alimentado com o ArrayList de estados.
-     */
-    public void deixarAFDCompleto() {
-        // Criar o estado consumidor
-        Estado estadoConsumidor = new Estado("Consumidor", -1, 300, 300, false, false);
-
-        // Adicionar o estado consumidor à lista de estados
-        lstEstadosInicial.add(estadoConsumidor);
-
-        // Iterar sobre todos os estados
-        for (Estado estado : lstEstadosInicial) {
-            // Para cada estado, verificamos se ele possui transições para todos os símbolos do alfabeto
-            for (String simbolo : alfabeto) {
-                boolean temTransicao = false;
-
-                // Verificar se já existe uma transição para o símbolo atual
-                for (Transicao transicao : estado.getLstTransicoes()) {
-                    if (transicao.getSimbolo().equalsIgnoreCase(simbolo)) {
-                        temTransicao = true;
-                        break; // Já tem transição para o símbolo, não precisa adicionar
-                    }
-                }
-
-                // Se não houver transição para o símbolo atual, criamos uma nova transição para o estado consumidor
-                if (!temTransicao) {
-                    Transicao novaTransicao = new Transicao(estado, estadoConsumidor, simbolo);
-                    estado.getLstTransicoes().add(novaTransicao);
-                }
-            }
-        }
-
-        // Agora colocamos as transições do alfabeto para o proprio consumidor.
-        for (String simbolo : alfabeto) {
-
-            Transicao transicaoParaConsumidor = new Transicao(estadoConsumidor, estadoConsumidor, simbolo);
-
-            // Adiciona essa transição ao ArrayList de transições do estado consumidor.
-            estadoConsumidor.getLstTransicoes().add(transicaoParaConsumidor);
-        }
-
-    }
 
 }

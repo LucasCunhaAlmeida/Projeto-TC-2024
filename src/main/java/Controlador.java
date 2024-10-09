@@ -23,18 +23,18 @@ public class Controlador {
      */
     public Controlador(File file) {
 
-        //Leitura do arquivo .xml escolhido, carregando os dados nas listas iniciais
+        //Leitura do arquivo .xml escolhido, carregando os dados nas listas iniciais.
         LeitorXML leitor = new LeitorXML(lstEstadosInicial, lstTransicoesInicial, alfabeto);
 
-        // Caminho do arquivo selecionado na InterfaceGrafica
+        // Caminho do arquivo selecionado na InterfaceGrafica.
         leitor.lerArquivo(file.getAbsolutePath());
 
         Conversor conversor = new Conversor(lstEstadosInicial, lstTransicoesInicial, alfabeto);
 
-        conversor.gerarAFN(lstEstadosFinal, lstTransicoesFinal);	// Falta fazer
+        conversor.gerarAFN(lstEstadosFinal, lstTransicoesFinal);
 
-        //Criação do arquivo .xml, usando as listas finais geradas pela conversão do AFN
-//        leitor.gravarArquivo(lstEstadosFinal, lstTransicoesFInal, alfabeto);	// Falta fazer
+        // Depois de gerar precisamos gravar este novo automato no arquivo XML.
+        gravarNoArquivo("Deu Certo");
 
         //imprimirDadosConsole();
 
@@ -77,4 +77,24 @@ public class Controlador {
         }
     }
 
+    private void gravarNoArquivo(String nomeDoArquivo){
+
+        try {
+            GravarXML gravarXML = new GravarXML();
+            for (EstadoAFN estadoAFN: lstEstadosFinal){
+                gravarXML.adicionarEstado(estadoAFN.getId(),estadoAFN.getNome(),estadoAFN.getX(),estadoAFN.getY(),
+                        estadoAFN.getLabel(),estadoAFN.isInicial(),estadoAFN.isFim());
+            }
+            gravarXML.comentarioDaListaDeTransicoes();
+
+            EstadoAFN teste1 = new EstadoAFN(new Estado("q4",4,400,400,false,false));
+            EstadoAFN teste2 = new EstadoAFN(new Estado("q5",5,500,400,false,false));
+            //gravarXML.adicionarTransicao(teste1,teste2,"a");
+
+            gravarXML.salvarXML(nomeDoArquivo + ".jff");
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 }
